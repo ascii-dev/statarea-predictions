@@ -14,6 +14,7 @@ def scrape():
         Scrape data from SoccerWay
     """
     url = URL.format(time.strftime("%Y-%m-%d"))
+    print(url)
     response = requests.get(url)
     soup = BeautifulSoup(response.text, "html.parser")
     # matches = soup.find_all('div', class_="cmatch")
@@ -34,38 +35,38 @@ def get_league():
         Gets soccer data from the function scrape's raw data
     """
     all_scrape = scrape()
-    by_league = []
     elements = []
     for item in all_scrape:
         leagues = {}
-        predictions = {}
+        league_predictions = []
+
         # Get the league from the header div
         leagues['name'] = item.find('div', {'class':'header'}).find('div', {'class':'name'}).get_text()
 
-        # prediction = item.find('div', {'class':'body'})
-        # matches = prediction.find("div", {"class":"match"})
-        # for match in matches:
-        #     predictions['match_time'] = match.find("div", {"class":"date"}).get_text()
-        # leagues['details'] = predictions
+        prediction = item.find('div', {'class':'body'})
+        matches = prediction.find_all("div", {"class":"match"})
+
+        for match in matches:
+            predictions = {}
+            matchrow = match.find("div", {"class":"matchrow"})
+            predictions['match_time'] = match.find("div", {"class":"date"}).get_text()
+            predictions['tip'] = matchrow.find("div",{"class":"tip"}).find("div", {"class":"value"}).find("div").get_text()
+            predictions['home_team'] = matchrow.find("div", {"class":"teams"}).find("div", {"class":"hostteam"}).find("div", {"class":"name"}).find("a").get_text()
+            predictions['away_team'] = matchrow.find("div", {"class":"teams"}).find("div", {"class":"guestteam"}).find("div", {"class":"name"}).find("a").get_text()
+            print(predictions['home_team'])
+            league_predictions.append(predictions)
+
+            # Get statistics details             
+            stats = []
+            statsrow = match.find("div", {"class":"inforow"}).find("div", {"class":"coefrow"})
+            all_stats = statsrow.find_all("div", {"class":"coefbox"})
+            for stat in range(0, len(all_stats)):
+                stats.append(all_stats[stat].get_text())
+            predictions['stats'] = stats[11:]
+        
+        leagues['details'] = league_predictions
         elements.append(leagues)
     return elements
-
-# def get_data():
-#     """
-#         Gets soccer data from the function scrape's raw data
-#     """
-#     all_predictions = scrape()
-#     prediction_list = []
-#     for item in all_predictions:
-#         prediction = {}
-#         #Get the prediction details in variables
-#         prediction['match_time'] = item.find("div", {"class":"time"}).get_text()
-#         prediction['home_team'] = item.find("div", {"class":"teams"}).select("a")[0].get_text()
-#         prediction['away_team'] = item.find("div", {"class":"teams"}).select("a")[1].get_text()
-#         prediction['tip'] = item.find("div", {"class":"value"}).find("div").get_text()
-#         # print("{} => {} - {} => {}".format(match_time, home_team, away_team, tip))
-#         prediction_list.append(prediction)
-#     return prediction_list
 
 def main():
     """
