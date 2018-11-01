@@ -8,13 +8,14 @@ from scrape import main
 
 app = Flask(__name__)
 
+
 @app.route('/')
 def index():
     """
-        Present the data in a RESTful API
+    Present the data in a RESTful API
     """
-    # return jsonify(predictions=main())
     return jsonify(main())
+
 
 if __name__ == "__main__":
     app.run(debug=True, host='127.0.0.1', port=5000)
